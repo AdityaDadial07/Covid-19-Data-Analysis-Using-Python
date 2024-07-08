@@ -1,47 +1,5 @@
-# name: Version Bump, Changelog, and Release
-# on:
-#   push:
-#     branches:
-#       - main
-# permissions:
-#   contents: write
-# jobs:
-#   version-changelog-and-release:
-#     name: Bump version, generate changelog, and create release
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
-#         with:
-#           fetch-depth: 0
-
-#       - name: Bump version
-#         uses: haya14busa/action-bumpr@v1
-#         id: bumpr
-#         with:
-#           default_bump_level: major
-#           github_token: ${{ secrets.GITHUB_TOKEN }}
-         
-#       - name: Generate a changelog
-#         uses: orhun/git-cliff-action@v3
-#         id: git-cliff
-#         with:
-#           config: cliff.toml
-#           args: -vv --latest --strip header
-#         env:
-#           OUTPUT: CHANGES.md
-#           GITHUB_REPO: ${{ github.repository }}
-
-#       - name: Create Release
-#         uses: softprops/action-gh-release@v1
-#         if: "steps.bumpr.outputs.skip != 'true'"
-#         with:
-#           body: ${{ steps.git-cliff.outputs.content }}
-#           tag_name: ${{ steps.bumpr.outputs.next_version }}
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-name: Version Bump, Changelog, and Release by aditya 07
+# Workflow to bump version, generate changelog and release
+name: Release
 on:
   push:
     branches:
