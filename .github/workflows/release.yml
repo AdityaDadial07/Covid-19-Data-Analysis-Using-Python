@@ -3,65 +3,25 @@ on:
   push:
     branches:
       - main
-# permissions:
-#   contents: write
-# jobs:
-#   version-changelog-and-release:
-#     name: Bump version, generate changelog, and create release
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v4
-#         with:
-#           fetch-depth: 0
-
-#       - name: Bump version
-#         uses: haya14busa/action-bumpr@v1
-#         id: bumpr
-#         with:
-#           default_bump_level: major
-#           github_token: ${{ secrets.GITHUB_TOKEN }}
-         
-#       - name: Generate a changelog
-#         uses: orhun/git-cliff-action@v3
-#         id: git-cliff
-#         with:
-#           config: cliff.toml
-#           args: -vv --latest --strip header
-#         env:
-#           OUTPUT: CHANGES.md
-#           GITHUB_REPO: ${{ github.repository }}
-
-#       - name: Create Release
-#         uses: softprops/action-gh-release@v1
-#         if: "steps.bumpr.outputs.skip != 'true'"
-#         with:
-#           body: ${{ steps.git-cliff.outputs.content }}
-#           tag_name: ${{ steps.bumpr.outputs.next_version }}
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-
 permissions:
   contents: write
 jobs:
   version-changelog-and-release:
     name: Bump version, generate changelog, and create release
     runs-on: ubuntu-latest
-    container: golang:1.13
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Bump version
-        id: bump_version
-        uses: packagrio/action-bumpr-generic@master
+        uses: haya14busa/action-bumpr@v1
+        id: bumpr
         with:
-          version_bump_type: ${{ github.event.inputs.version_bump_type }}
-          version_metadata_path: ${{ github.event.inputs.version_metadata_path }}
-          generic_version_template: ${{ github.event.inputs.generic_version_template }}
+          default_bump_level: major
           github_token: ${{ secrets.GITHUB_TOKEN }}
+         
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
         id: git-cliff
@@ -71,11 +31,12 @@ jobs:
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        if: "steps.bump_version.outputs.skip != 'true'"
+        if: "steps.bumpr.outputs.skip != 'true'"
         with:
           body: ${{ steps.git-cliff.outputs.content }}
-          tag_name: ${{ steps.bump_version.outputs.next_version }}
+          tag_name: ${{ steps.bumpr.outputs.next_version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
