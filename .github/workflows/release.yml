@@ -1,4 +1,4 @@
-name: Generates Changelog and Create Release
+name: Version Bump, Changelog, and Release
 on:
   push:
     branches:
@@ -6,15 +6,21 @@ on:
 permissions:
   contents: write
 jobs:
-  changelog-and-release:
-    name: Generate changelog and create release
+  version-changelog-and-release:
+    name: Bump version, generate changelog, and create release
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
+      - name: Bump version and push tag
+        id: tag_version
+        uses: mathieudutour/github-tag-action@v6.1
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
         id: git-cliff
@@ -24,11 +30,11 @@ jobs:
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
-      
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
           body: ${{ steps.git-cliff.outputs.content }}
-          tag_name: ${{ github.ref_name }}
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
