@@ -38,6 +38,7 @@ jobs:
           asset_name: mything
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }}
+          overwrite: true
           body: ${{ steps.git-cliff.outputs.content }}
 
   # use release body in another job
@@ -53,4 +54,5 @@ jobs:
           asset_name: mything
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }}
+          overwrite: true
           body: ${{ needs.changelog.outputs.release_body }}
