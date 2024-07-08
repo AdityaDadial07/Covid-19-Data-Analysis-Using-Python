@@ -19,7 +19,7 @@ jobs:
         uses: haya14busa/action-bumpr@v1
         id: bumpr
         with:
-          default_bump_level: patch
+          default_bump_level: minor
           github_token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate a changelog
