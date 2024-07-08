@@ -37,7 +37,8 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }}
           body: ${{ steps.git-cliff.outputs.content }}
-  
+          overwrite: true  # Add this line
+
   upload:
     name: Upload the release
     needs: changelog
@@ -54,3 +55,4 @@ jobs:
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }}
           body: ${{ needs.changelog.outputs.release_body }}
+          overwrite: true  # Add this line
