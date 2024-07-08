@@ -1,3 +1,10 @@
+name: Generate Changelog
+
+on:
+  push:
+    branches:
+      - master
+
 jobs:
   changelog:
     name: Generate changelog
