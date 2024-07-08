@@ -15,7 +15,7 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Bump version
+      # - name: Bump version
         # uses: haya14busa/action-bumpr@v1
         # id: bumpr
         # with:
