@@ -15,12 +15,11 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Bump version
-        uses: haya14busa/action-bumpr@v1
-        id: bumpr
+      - name: Bump version and push tag
+        uses: darioblanco/bump-semver@v1.0.0
         with:
-          default_bump_level: major
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+         token: ${{ secrets.GITHUB_TOKEN }}
+         prefix: mygroup/
 
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
