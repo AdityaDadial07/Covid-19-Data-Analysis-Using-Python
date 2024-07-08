@@ -1,4 +1,4 @@
-# Workflow to bump version, generate changelog and releases
+# Workflow for release and version management
 name: Release
 on:
   push:
