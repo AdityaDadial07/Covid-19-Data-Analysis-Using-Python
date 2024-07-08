@@ -35,6 +35,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           file: target/release/mything
+          asset_name: mything
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }}
           body: ${{ steps.git-cliff.outputs.content }}
@@ -49,6 +50,7 @@ jobs:
         uses: svenstaro/upload-release-action@v2
         with:
           file: target/release/mything
+          asset_name: mything
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }}
           body: ${{ needs.changelog.outputs.release_body }}
