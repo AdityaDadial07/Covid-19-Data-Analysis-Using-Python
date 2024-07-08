@@ -1,3 +1,4 @@
+# Workflow to bump version, generate changelog and release
 name: Release
 on:
   push:
