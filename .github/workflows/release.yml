@@ -3,8 +3,10 @@ on:
   push:
     branches:
       - main
+
 permissions:
   contents: write
+
 jobs:
   changelog:
     name: Generate changelog
@@ -16,6 +18,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
+
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
         id: git-cliff
@@ -25,34 +28,25 @@ jobs:
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
-      # Create a dummy binary_release.zip file
-      - name: Create dummy binary_release.zip
-        run: |
-          echo "Dummy content" > dummy.txt
-          zip binary_release.zip dummy.txt
+
+      # use release body in the same job
       - name: Upload the binary releases
         uses: svenstaro/upload-release-action@v2
         with:
-          file: binary_release.zip
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }}
           body: ${{ steps.git-cliff.outputs.content }}
-          overwrite: true  # Add this line
 
+  # use release body in another job
   upload:
     name: Upload the release
     needs: changelog
     runs-on: ubuntu-latest
     steps:
-      - name: Create dummy binary_release.zip
-        run: |
-          echo "Dummy content" > dummy.txt
-          zip binary_release.zip dummy.txt
       - name: Upload the binary releases
         uses: svenstaro/upload-release-action@v2
         with:
-          file: binary_release.zip
           repo_token: ${{ secrets.GITHUB_TOKEN }}
           tag: ${{ github.ref }}
           body: ${{ needs.changelog.outputs.release_body }}
-          overwrite: true  # Add this line
+    
