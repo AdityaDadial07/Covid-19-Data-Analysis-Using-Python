@@ -41,7 +41,7 @@
 #         env:
 #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-name: Version Bump, Changelog, and Release by aditya 07
+name: Release
 on:
   push:
     branches:
