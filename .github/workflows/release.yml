@@ -1,15 +1,14 @@
 name: Version Bump, Changelog, and Release
+
 on:
   push:
     branches:
-      - main
+      - main  # Change this to `main` if your default branch is `main`
 
 jobs:
   version-changelog-and-release:
-    name: Bump version, generate changelog, and create release
-    runs-on: ubuntu-22.04
-    permissions:
-      contents: write
+    runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -17,26 +16,24 @@ jobs:
           fetch-depth: 0
 
       - name: Bump version and push tag
-        uses: anothrNick/github-tag-action@v1
         id: tag_version
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          WITH_V: false
-
-      - name: Generate a changelog
-        uses: orhun/git-cliff-action@v3
-        id: generate_changelog
+        uses: mathieudutour/github-tag-action@v6.2
         with:
-          config: cliff.toml
-          args: -vv --latest --strip header
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          
+      - name: Generate a changelog
+        id: generate_changelog
+        run: |
+          git cliff --config cliff.toml -vv --latest --strip header > CHANGES.md
         env:
-          OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
 
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
+      - name: Create a GitHub release
+        uses: ncipollo/release-action@v1
         with:
-          body_path: CHANGES.md
-          tag_name: ${{ steps.tag_version.outputs.new_tag }}
+          tag: ${{ steps.tag_version.outputs.new_tag }}
+          name: Release ${{ steps.tag_version.outputs.new_tag }}
+          body: |
+            ${{ steps.generate_changelog.outputs.content }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
