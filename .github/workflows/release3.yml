@@ -18,18 +18,23 @@ jobs:
         uses: tomerfi/version-bumper-action@2.0.1
       - name: Bump version
         run: echo ${{ steps.bumper.outputs.next }}
+      - name: Get previous tag
+        run: |
+          git describe --tags --abbrev=0 | cut -d'v' -f2-
+          PREVIOUS_TAG=$(git describe --tags --abbrev=0 | cut -d'v' -f2-)
+          echo "PREVIOUS_TAG=$PREVIOUS_TAG" >> $GITHUB_ENV
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
         id: git-cliff
         with:
           config: cliff.toml
-          args: -vv --latest --strip header --tag ${{ steps.bumper.outputs.next }}
+          args: -vv --from ${{ env.PREVIOUS_TAG }} --strip header
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        if: "steps.bumper.outputs.next != ''"
+        if: "steps.bumper.outputs.next!= ''"
         with:
           body: ${{ steps.git-cliff.outputs.content }}
           tag_name: ${{ steps.bumper.outputs.next }}
