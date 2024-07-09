@@ -1,4 +1,4 @@
-# name: Release system
+# name: Version Bump, Changelog and Release
 # on:
 #   push:
 #     branches:
@@ -11,28 +11,32 @@
 #     runs-on: ubuntu-latest
 #     steps:
 #       - name: Checkout
-#         uses: actions/checkout@v3
+#         uses: actions/checkout@v4
 #         with:
 #           fetch-depth: 0
+
 #       - name: Bump version
-#         id: bumper
-#         uses: tomerfi/version-bumper-action@2.0.1
-        
-#       - name: Generate a changelog for the latest release
+#         uses: haya14busa/action-bumpr@v1
+#         id: bumpr
+#         with:
+#           default_bump_level: major
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+         
+#       - name: Generate a changelog
 #         uses: orhun/git-cliff-action@v3
 #         id: git-cliff
 #         with:
 #           config: cliff.toml
-#           args: --verbose --strip header --tag ${{ steps.bumper.outputs.next }}
+#           args: -vv --latest --strip header
 #         env:
 #           OUTPUT: CHANGES.md
 #           GITHUB_REPO: ${{ github.repository }}
-  
+
 #       - name: Create Release
 #         uses: softprops/action-gh-release@v1
-#         if: ${{ !needs.version.outputs.skip-publish }}
+#         if: "steps.bumpr.outputs.skip != 'true'"
 #         with:
 #           body: ${{ steps.git-cliff.outputs.content }}
-#           tag_name: ${{ steps.bumper.outputs.next }}
+#           tag_name: ${{ steps.bumpr.outputs.next_version }}
 #         env:
 #           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
