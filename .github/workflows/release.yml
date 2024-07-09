@@ -1,42 +1,40 @@
 name: Release
-push: 
-  branches: 
-    - main 
-permissions: 
-  contents: 
-    write 
-jobs: 
-  version-changelog-and-release: 
-    name: Bump version, generate changelog, and create release 
-    runs-on: ubuntu-latest 
-    steps: 
-      - name: Checkout 
-        uses: actions/checkout@v3 
-        with: 
-          fetch-depth: 0 
-      - name: Bump version 
-        id: bumper 
-        uses: tomerfi/version-bumper-action@2.0.1 
-      - name: Generate a changelog 
-        uses: orhun/git-cliff-action@v3 
-        id: git-cliff 
-        with: 
-          config: 
-            # Assuming you've customized cliff.toml to only include the latest version's changes
-            # This is a placeholder; actual configuration depends on your commit message patterns
-            version_pattern = "^v[0-9]+\.[0-9]+\.[0-9]+$"
-          args: 
-            --verbose 
-            --strip header 
-            --tag ${{ steps.bumper.outputs.next }} 
-          env: 
-            OUTPUT: CHANGES.md 
-            GITHUB_REPO: ${{ github.repository }} 
-      - name: Create Release 
-        uses: softprops/action-gh-release@v1 
-        if: ${{ !needs.version.outputs.skip-publish }} 
-        with: 
-          body: ${{ steps.git-cliff.outputs.content }} 
-          tag_name: ${{ steps.bumper.outputs.next }} 
-          env: 
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: write
+jobs:
+  version-changelog-and-release:
+    name: Bump version, generate changelog, and create release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          fetch-depth: 0
+
+      - name: Bump version
+        id: bumper
+        uses: tomerfi/version-bumper-action@2.0.1
+        
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v3
+        id: git-cliff
+        with:
+          config: cliff.toml
+          args: --verbose --strip header --tag ${{ steps.bumper.outputs.next }}
+        env:
+          OUTPUT: CHANGES.md
+          GITHUB_REPO: ${{ github.repository }}
+  
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: ${{ !needs.version.outputs.skip-publish }}
+        with:
+          body: ${{ steps.git-cliff.outputs.content }}
+          tag_name: ${{ steps.bumper.outputs.next }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
