@@ -2,7 +2,7 @@ name: Version Bump, Changelog, and Release
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   version-changelog-and-release:
