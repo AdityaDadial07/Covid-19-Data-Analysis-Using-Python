@@ -29,7 +29,6 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        if: "steps.bumper.outputs.next != ''"
         with:
           body: ${{ steps.git-cliff.outputs.content }}
           tag_name: ${{ steps.bumper.outputs.next }}
