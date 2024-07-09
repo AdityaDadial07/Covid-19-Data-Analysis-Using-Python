@@ -1,4 +1,3 @@
-# Workflow for Release and Version management by aditya
 name: Release
 on:
   push:
@@ -12,24 +11,32 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
         with:
           fetch-depth: 0
-      
+
       - name: Bump version
         id: bumper
         uses: tomerfi/version-bumper-action@2.0.1
-      
+
+      - name: Commit version bump
+        run: |
+          git config --local user.email "action@github.com"
+          git config --local user.name "GitHub Action"
+          git add .
+          git commit -m "Bump version to ${{ steps.bumper.outputs.next }}"
+          git push
+
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
         id: git-cliff
         with:
           config: cliff.toml
-          args: -vv --latest --strip header
+          args: -vv --current --strip header
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
-      
+
       - name: Create Release
         uses: softprops/action-gh-release@v1
         with:
