@@ -1,4 +1,4 @@
-# Workflow for release and version management by aditya
+# Workflow for Release and Version management
 name: Release
 on:
   push:
