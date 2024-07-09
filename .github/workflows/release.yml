@@ -18,15 +18,7 @@ jobs:
       - name: Bump version
         id: bumper
         uses: tomerfi/version-bumper-action@2.0.1
-
-      - name: Commit version bump
-        run: |
-          git config --local user.email "action@github.com"
-          git config --local user.name "GitHub Action"
-          git add .
-          git commit -m "Bump version to ${{ steps.bumper.outputs.next }}"
-          git push
-
+        
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
         id: git-cliff
