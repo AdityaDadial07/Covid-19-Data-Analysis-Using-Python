@@ -24,16 +24,16 @@ jobs:
         id: git-cliff
         with:
           config: cliff.toml
-          args: -vv --latest --strip header
+          args: --verbose
         env:
-          OUTPUT: CHANGES.md
+          OUTPUT: CHANGELOG.md
           GITHUB_REPO: ${{ github.repository }}
       
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: "${{ steps.bumper.outputs.next != '' }}"
         with:
-          body: ${{ steps.git-cliff.outputs.content }}
+          body_path: CHANGELOG.md
           tag_name: ${{ steps.bumper.outputs.next }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
