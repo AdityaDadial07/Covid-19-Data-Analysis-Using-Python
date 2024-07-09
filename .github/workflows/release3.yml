@@ -1,3 +1,45 @@
+# name: Version Bump, Changelog, and Release
+# on:
+#   push:
+#     branches:
+#       - main
+# permissions:
+#   contents: write
+# jobs:
+#   version-changelog-and-release:
+#     name: Bump version, generate changelog, and create release
+#     runs-on: ubuntu-latest
+#     steps:
+#       - name: Checkout
+#         uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
+#       - name: Bump version and push tag
+#         id: tag_version
+#         uses: mathieudutour/github-tag-action@v6.1
+#         with:
+#           github_token: ${{ secrets.GITHUB_TOKEN }}
+#           default_bump: false
+#           create_annotated_tag: true
+#       - name: Generate a changelog
+#         uses: orhun/git-cliff-action@v3
+#         id: git-cliff
+#         with:
+#           config: cliff.toml
+#           args: -vv --tag ${{ steps.tag_version.outputs.new_tag }} --latest --strip header
+#         env:
+#           OUTPUT: CHANGES.md
+#           GITHUB_REPO: ${{ github.repository }}
+#       - name: Create Release
+#         uses: softprops/action-gh-release@v1
+#         if: steps.tag_version.outputs.new_tag
+#         with:
+#           body: ${{ steps.git-cliff.outputs.content }}
+#           tag_name: ${{ steps.tag_version.outputs.new_tag }}
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+
 name: Version Bump, Changelog, and Release
 on:
   push:
@@ -21,20 +63,20 @@ jobs:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           default_bump: false
           create_annotated_tag: true
+      - name: Install git-cliff
+        run: cargo install git-cliff
       - name: Generate a changelog
-        uses: orhun/git-cliff-action@v3
         id: git-cliff
-        with:
-          config: cliff.toml
-          args: -vv --tag ${{ steps.tag_version.outputs.new_tag }} --latest --strip header
-        env:
-          OUTPUT: CHANGES.md
-          GITHUB_REPO: ${{ github.repository }}
+        run: |
+          changelog=$(git cliff --tag ${{ steps.tag_version.outputs.new_tag }} --strip header --latest)
+          echo "changelog<<EOF" >> $GITHUB_OUTPUT
+          echo "$changelog" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: steps.tag_version.outputs.new_tag
         with:
-          body: ${{ steps.git-cliff.outputs.content }}
+          body: ${{ steps.git-cliff.outputs.changelog }}
           tag_name: ${{ steps.tag_version.outputs.new_tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
