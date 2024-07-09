@@ -1,0 +1,47 @@
+name: Release
+# This workflow is triggered on push to master
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  version-changelog-and-release:
+    name: Bump version, generate changelog, and create release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Bump version
+        id: bump_version
+        uses: packagrio/action-bumpr-generic@master
+        with:
+          version_bump_type: patch
+          version_metadata_path: VERSION
+          generic_version_template: 'version := "%d.%d.%d"'
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Print if version changed
+        if: steps.bump_version.outputs.previous_version != steps.bump_version.outputs.new_version
+        run: echo "The new version is now $new_version"
+        env:
+          new_version: ${{ steps.bump_version.outputs.new_version }}
+
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v3
+        id: git-cliff
+        with:
+          config: cliff.toml
+          args: -vv --latest --strip header
+        env:
+          GITHUB_REPO: ${{ github.repository }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: steps.bump_version.outputs.previous_version != steps.bump_version.outputs.new_version
+        with:
+          body: ${{ steps.git-cliff.outputs.content }}
+          tag_name: ${{ steps.bump_version.outputs.new_version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
