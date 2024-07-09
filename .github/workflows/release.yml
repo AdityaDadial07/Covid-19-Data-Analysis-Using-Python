@@ -1,43 +1,41 @@
-# name: Release
-# on:
-#   push:
-#     branches:
-#       - main
-# permissions:
-#   contents: write
-# jobs:
-#   version-changelog-and-release:
-#     name: Bump version, generate changelog, and create release
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v3
-#         with:
-#           fetch-depth: 0
+name: Version Bump, Changelog, and Release
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: write
+jobs:
+  version-changelog-and-release:
+    name: Bump version, generate changelog, and create release
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
 
-#       - name: Bump version
-#         id: bumper
-#         uses: tomerfi/version-bumper-action@2.0.1
-        
-#       - name: Generate a changelog
-#         uses: orhun/git-cliff-action@v3
-#         id: git-cliff
-#         with:
-#           config: cliff.toml
-#           args: --verbose --strip header --tag ${{ steps.bumper.outputs.next }}
-#         env:
-#           OUTPUT: CHANGES.md
-#           GITHUB_REPO: ${{ github.repository }}
-  
+      - name: Bump version
+        id: bumper
+        uses: tomerfi/version-bumper-action@2.0.1
 
-#       - name: Create Release
-#         uses: softprops/action-gh-release@v1
-#         if: ${{ !needs.version.outputs.skip-publish }}
-#         with:
-#           body: ${{ steps.git-cliff.outputs.content }}
-#           tag_name: ${{ steps.bumper.outputs.next }}
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - run: echo ${{ steps.bumper.outputs.next }}
 
+      - name: Generate a changelog
+        uses: orhun/git-cliff-action@v3
+        id: git-cliff
+        with:
+          config: cliff.toml
+          args: -vv --latest --strip header
+        env:
+          OUTPUT: CHANGES.md
+          GITHUB_REPO: ${{ github.repository }}
 
-#yeh bekar action tha...time brbaad kr diya isne bda gussa a raha ha
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: "steps.bumper.outputs.next != ''"
+        with:
+          body: ${{ steps.git-cliff.outputs.content }}
+          tag_name: ${{ steps.bumper.outputs.next }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
