@@ -18,12 +18,12 @@ jobs:
         id: bumper
         uses: tomerfi/version-bumper-action@2.0.1
         
-      - name: Generate a changelog
+      - name: Generate a changelog for the latest release
         uses: orhun/git-cliff-action@v3
         id: git-cliff
         with:
           config: cliff.toml
-          args: --verbose --strip header --tag ${{ steps.bumper.outputs.next }}
+          args: --since-tag=${{ steps.bumper.outputs.tag }} --verbose --strip header --tag ${{ steps.bumper.outputs.next }}
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
@@ -36,4 +36,3 @@ jobs:
           tag_name: ${{ steps.bumper.outputs.next }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
