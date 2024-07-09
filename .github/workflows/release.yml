@@ -14,27 +14,35 @@ jobs:
         uses: actions/checkout@v3
         with:
           fetch-depth: 0
-
+      
       - name: Bump version
         id: bumper
         uses: tomerfi/version-bumper-action@2.0.1
-        
+      
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
         id: git-cliff
         with:
           config: cliff.toml
-          args: --verbose --strip header --tag ${{ steps.bumper.outputs.next }} --latest 1
+          args: --verbose --strip header --tag ${{ steps.bumper.outputs.next }}
+          with-header: false
+          output: CHANGELOG.md
         env:
-          OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
-  
+      
+      - name: Extract latest changelog
+        id: extract-changelog
+        run: |
+          LATEST=$(sed -n '/^## /,/^## /p' CHANGELOG.md | sed '$d')
+          echo "CHANGELOG<<EOF" >> $GITHUB_OUTPUT
+          echo "$LATEST" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: ${{ !needs.version.outputs.skip-publish }}
         with:
-          body: ${{ steps.git-cliff.outputs.content }}
+          body: ${{ steps.extract-changelog.outputs.CHANGELOG }}
           tag_name: ${{ steps.bumper.outputs.next }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
