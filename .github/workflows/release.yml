@@ -24,8 +24,7 @@ jobs:
         id: git-cliff
         with:
           config: cliff.toml
-          # Removed the --latest flag to avoid confusion
-          args: -vv --strip header
+          args: -r $(git rev-list --tags --max-count=1)..HEAD --verbose
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
