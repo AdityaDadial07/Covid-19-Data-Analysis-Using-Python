@@ -11,16 +11,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v2
         with:
           fetch-depth: 0
+      - id: bumper
+        uses: tomerfi/version-bumper-action@2.0.1
       - name: Bump version
-        uses: haya14busa/action-bumpr@v1
-        id: bumpr
-        with:
-          default_bump_level: major
-          github_token: ${{ secrets.GITHUB_TOKEN }}
-         
+        run: echo ${{ steps.bumper.outputs.next }}
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
         id: git-cliff
@@ -32,9 +29,9 @@ jobs:
           GITHUB_REPO: ${{ github.repository }}
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        if: "steps.bumpr.outputs.skip != 'true'"
+        if: "steps.bumper.outputs.next != ''"
         with:
           body: ${{ steps.git-cliff.outputs.content }}
-          tag_name: ${{ steps.bumpr.outputs.next_version }}
+          tag_name: ${{ steps.bumper.outputs.next }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
