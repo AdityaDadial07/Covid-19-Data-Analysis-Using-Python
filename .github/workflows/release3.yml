@@ -23,10 +23,10 @@ jobs:
           prerelease: 'alpha'
 
       - name: Print if version changed
-        if: steps.bump_version.outputs.previous-version != steps.bump_version.outputs.new-version
+        if: steps.bump_version.outputs.previous_version != steps.bump_version.outputs.new_version
         run: echo "The new version is now $new_version"
         env:
-          new_version: ${{ steps.bump_version.outputs.new-version }}
+          new_version: ${{ steps.bump_version.outputs.new_version }}
 
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
@@ -39,9 +39,12 @@ jobs:
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        if: steps.bump_version.outputs.previous-version != steps.bump_version.outputs.new-version
+        if: steps.bump_version.outputs.previous_version != steps.bump_version.outputs.new_version
         with:
+          tag_name: ${{ steps.bump_version.outputs.new_version }}
+          name: Release ${{ steps.bump_version.outputs.new_version }}
           body: ${{ steps.git-cliff.outputs.content }}
-          tag_name: ${{ steps.bump_version.outputs.new-version }}
+          draft: false
+          prerelease: true
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
