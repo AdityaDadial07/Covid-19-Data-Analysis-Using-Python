@@ -53,7 +53,6 @@ jobs:
   version-changelog-and-release:
     name: Bump version, generate changelog, and create release
     runs-on: ubuntu-latest
-    concurrency: ci-${{ github.ref }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -77,7 +76,6 @@ jobs:
           config: cliff.toml
           args: -vv --latest --strip header
         env:
-          OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
 
       - name: Create Release
