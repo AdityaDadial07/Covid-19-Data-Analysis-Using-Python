@@ -1,50 +1,8 @@
-# name: Version Bump, Changelog, and Release
-# on:
-#   push:
-#     branches:
-#       - main
-# permissions:
-#   contents: write
-# jobs:
-#   version-changelog-and-release:
-#     name: Bump version, generate changelog, and create release
-#     runs-on: ubuntu-latest
-#     steps:
-#       - name: Checkout
-#         uses: actions/checkout@v2
-#         with:
-#           fetch-depth: 0
-
-#       - name: Bump version
-#         id: bumper
-#         uses: tomerfi/version-bumper-action@2.0.1
-
-#       - run: echo ${{ steps.bumper.outputs.next }}
-
-#       - name: Generate a changelog
-#         uses: orhun/git-cliff-action@v3
-#         id: git-cliff
-#         with:
-#           config: cliff.toml
-#           args: -vv --latest --strip header
-#         env:
-#           OUTPUT: CHANGES.md
-#           GITHUB_REPO: ${{ github.repository }}
-
-#       - name: Create Release
-#         uses: softprops/action-gh-release@v1
-#         if: "steps.bumper.outputs.next != ''"
-#         with:
-#           body: ${{ steps.git-cliff.outputs.content }}
-#           tag_name: ${{ steps.bumper.outputs.next }}
-#         env:
-#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
 name: Version Bump, Changelog, and Release
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   version-changelog-and-release:
@@ -60,13 +18,14 @@ jobs:
 
       - name: Bump version and push tag
         uses: anothrNick/github-tag-action@v1
+        id: tag_version
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           WITH_V: false
 
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
-        id: git-cliff
+        id: generate_changelog
         with:
           config: cliff.toml
           args: -vv --latest --strip header
@@ -76,10 +35,8 @@ jobs:
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        if: "steps.git-cliff.outputs.content != ''"
         with:
-          body: ${{ steps.git-cliff.outputs.content }}
-          tag_name: ${{ steps.anothrNick.outputs.new_tag }}
+          body_path: CHANGES.md
+          tag_name: ${{ steps.tag_version.outputs.new_tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
