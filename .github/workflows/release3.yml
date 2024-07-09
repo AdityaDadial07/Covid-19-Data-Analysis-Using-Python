@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     branches:
-      - main
+      - master
 
 jobs:
   version-changelog-and-release:
@@ -15,18 +15,18 @@ jobs:
 
       - name: Bump version
         id: bump_version
-        uses: packagrio/action-bumpr-generic@master
+        uses: SOLIDSoftworks/semver-tags@v1
         with:
-          version_bump_type: patch
-          version_metadata_path: VERSION
-          generic_version_template: 'version := "%d.%d.%d"'
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          tag-prefix: 'v'
+          default-version: '0.0.1'
+          prerelease: 'alpha'
 
       - name: Print if version changed
-        if: steps.bump_version.outputs.previous_version != steps.bump_version.outputs.new_version
+        if: steps.bump_version.outputs.previous-version != steps.bump_version.outputs.new-version
         run: echo "The new version is now $new_version"
         env:
-          new_version: ${{ steps.bump_version.outputs.new_version }}
+          new_version: ${{ steps.bump_version.outputs.new-version }}
 
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
@@ -39,9 +39,9 @@ jobs:
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        if: steps.bump_version.outputs.previous_version != steps.bump_version.outputs.new_version
+        if: steps.bump_version.outputs.previous-version != steps.bump_version.outputs.new-version
         with:
           body: ${{ steps.git-cliff.outputs.content }}
-          tag_name: ${{ steps.bump_version.outputs.new_version }}
+          tag_name: ${{ steps.bump_version.outputs.new-version }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
