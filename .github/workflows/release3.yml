@@ -26,7 +26,7 @@ jobs:
         id: git-cliff
         with:
           config: cliff.toml
-          args: -vv --tag ${{ steps.tag_version.outputs.new_tag }} --strip header
+          args: -vv --tag ${{ steps.tag_version.outputs.new_tag }} --latest --strip header
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
