@@ -24,7 +24,7 @@ jobs:
         id: git-cliff
         with:
          config: cliff.toml
-         args: --verbose --tag ${{ steps.bumper.outputs.next }}
+         args: --verbose --tag ${{ steps.bumper.outputs.next }} --strip header
         env:
          OUTPUT: CHANGES.md
          GITHUB_REPO: ${{ github.repository }}
