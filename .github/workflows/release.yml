@@ -31,6 +31,7 @@ jobs:
 
       - name: Create Release
         uses: softprops/action-gh-release@v1
+        if: ${{ !needs.version.outputs.skip-publish }}
         with:
           body: ${{ steps.git-cliff.outputs.content }}
           tag_name: ${{ steps.bumper.outputs.next }}
