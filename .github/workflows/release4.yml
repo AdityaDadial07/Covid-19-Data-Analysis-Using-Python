@@ -1,4 +1,4 @@
-name: Version bumping, changelog generation and Release
+name: Version Bump, Changelog and Releases
 on:
   push:
     branches:
@@ -14,29 +14,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
-      - name: Determine bump level
-        id: bump-level
-        run: |
-          git log --format=%B -n 1 ${{ github.sha }} | 
-          awk '
-          /^BREAKING CHANGE:/ || /^[a-zA-Z]+(\([a-zA-Z]+\))?!:/ {print "major"; exit}
-          /^feat:/ {print "minor"; exit}
-          /^fix:/ || /^doc:/ || /^perf:/ || /^refactor:/ || /^style:/ || /^test:/ {print "patch"; exit}
-          /^chore\(release\): prepare for/ || /^chore\(deps.*\):/ || /^chore\(pr\):/ || /^chore\(pull\):/ {print "skip"; exit}
-          /^chore:/ || /^ci:/ {print "patch"; exit}
-          /security/ {print "patch"; exit}
-          /^revert:/ {print "patch"; exit}
-          END {if (NR==0) print "patch"}
-          ' > bump_level.txt
-          echo "level=$(cat bump_level.txt)" >> $GITHUB_OUTPUT
-      
       - name: Bump version
-        uses: haya14busa/action-bumpr@v1
+        uses: anothrNick/github-tag-action@1.67.0
         id: bumpr
-        with:
-          default_bump_level: ${{ steps.bump-level.outputs.level }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          DEFAULT_BUMP: patch
+          WITH_V: true
       
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
@@ -47,12 +31,11 @@ jobs:
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
-      
       - name: Create Release
         uses: softprops/action-gh-release@v1
-        if: "steps.bumpr.outputs.skip != 'true'"
+        if: "steps.bumpr.outputs.new_tag"
         with:
           body: ${{ steps.git-cliff.outputs.content }}
-          tag_name: ${{ steps.bumpr.outputs.next_version }}
+          tag_name: ${{ steps.bumpr.outputs.new_tag }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
