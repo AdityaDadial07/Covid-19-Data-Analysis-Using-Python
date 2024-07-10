@@ -1,27 +1,66 @@
-name: Automated Versioning and Releases
-on:
-  push:
-    branches:
-      - main
-permissions:
-  contents: write
-  
-jobs:
-  version:
-    name: Version
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.release.outputs.version }}
-      changelog: ${{ steps.release.outputs.changelog }}
+name: GitHub Versioning and Release
+description: "Elanco custom GitHub Action to automatically version bump (semver with conventional commits), tag and release to a GitHub repository"
 
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+inputs:
+  GH_TOKEN:
+    required: true
+    description: "The GitHub API Token permitted to tag and release to a GitHub repository"
+  GIT_CLIFF_VERSION:
+    required: true
+    description: "The version of Git Cliff to invoke, e.g. 'v2.2.1'"
+    default: "2.2.2"
 
-      - name: Release
-        uses: ./actions/github-version-release/
-        id: release
-        with:
-          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+outputs:
+  VERSION:
+    description: "The version of the release"
+    value: ${{ steps.versioning.outputs.version }}
+  CHANGELOG:
+    description: "The changelog of the release"
+    value: ${{ steps.versioning.outputs.changelog }}
+
+runs:
+  using: composite
+  steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Set up git-cliff
+      uses: kenji-miyake/setup-git-cliff@v2
+      with:
+        version: ${{ inputs.GIT_CLIFF_VERSION }}
+        token: ${{ inputs.GH_TOKEN }}
+
+    - name: Generate changelog & bump version
+      id: versioning
+      shell: bash
+      run: |
+        # Bump Version
+        echo "version=$(git cliff -c .github/actions/github-bump-release/cliff.toml --bumped-version)" >> $GITHUB_OUTPUT
+        
+        # Generate changelog
+        git cliff \
+          -c .github/actions/github-bump-release/cliff.toml \
+          --unreleased  \
+          --output CHANGELOG.md \
+          -vv
+        changelog=$(cat CHANGELOG.md)
+        rm CHANGELOG.md
+
+        # Output multiline strings: https://docs.github.com/en/actions/using-workflows/workflow-commands-for-github-actions#multiline-strings
+        EOF=$(dd if=/dev/urandom bs=15 count=1 status=none | base64)
+        echo "changelog<<$EOF" >> $GITHUB_OUTPUT
+        echo "$changelog" >> $GITHUB_OUTPUT
+        echo "$EOF" >> $GITHUB_OUTPUT
+        echo "version=${version}" >> $GITHUB_OUTPUT
+
+    - name: Push Release to GitHub
+      shell: bash
+      run: |
+        echo "$CHANGELOG" >> CHANGELOG.md
+        gh release create $VERSION --notes-file CHANGELOG.md
+      env:
+        CHANGELOG: ${{ steps.versioning.outputs.changelog }}
+        VERSION: ${{ steps.versioning.outputs.version }}
+        GH_TOKEN: ${{ inputs.GH_TOKEN }}
