@@ -21,7 +21,7 @@ jobs:
           fetch-depth: 0
 
       - name: Release
-        uses: ./.github/actions/github-version-release
+        uses: ./.github/workflows/actions/github-version-release/action.yml
         id: release
         with:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
