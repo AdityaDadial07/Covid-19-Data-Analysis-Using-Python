@@ -24,7 +24,7 @@ jobs:
               echo "major"
             elif echo "$commits" | grep -qE '^feat(\([^)]+\))?:'; then
               echo "minor"
-            elif echo "$commits" | grep -qE '^(fix|docs|style|refactor|perf|test|chore)(\([^)]+\))?:'; then
+            elif echo "$commits" | grep -qE '^(fix|docs|style|refactor|perf|test|chore|ci)(\([^)]+\))?:'; then
               echo "patch"
             elif echo "$commits" | grep -qE '^Merge pull request'; then
               # For merge commits, analyze the merged commits
