@@ -14,7 +14,6 @@ jobs:
         uses: actions/checkout@v4
         with:
           fetch-depth: 0
-
       - name: Determine bump level
         id: bump-level
         run: |
@@ -27,16 +26,26 @@ jobs:
               echo "minor"
             elif echo "$commits" | grep -qE '^(fix|docs|style|refactor|perf|test|chore)(\([^)]+\))?:'; then
               echo "patch"
+            elif echo "$commits" | grep -qE '^Merge pull request'; then
+              # For merge commits, analyze the merged commits
+              merged_commits=$(git log --format=%B HEAD^2..HEAD^)
+              if echo "$merged_commits" | grep -qE '^BREAKING CHANGE:'; then
+                echo "major"
+              elif echo "$merged_commits" | grep -qE '^feat(\([^)]+\))?:'; then
+                echo "minor"
+              elif echo "$merged_commits" | grep -qE '^(fix|docs|style|refactor|perf|test|chore)(\([^)]+\))?:'; then
+                echo "patch"
+              else
+                echo "patch"  # Default to patch if no conventional commit is found in merged commits
+              fi
             else
               echo "patch"  # Default to patch if no conventional commit is found
             fi
           }
-
           # Set the bump level
           BUMP_LEVEL=$(determine_bump_level)
           echo "Determined bump level: $BUMP_LEVEL"
           echo "bump_level=$BUMP_LEVEL" >> $GITHUB_OUTPUT
-
       - name: Bump version
         uses: haya14busa/action-bumpr@v1
         id: bumpr
@@ -53,7 +62,6 @@ jobs:
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
-
       - name: Create Release
         uses: softprops/action-gh-release@v1
         if: "steps.bumpr.outputs.skip != 'true'"
