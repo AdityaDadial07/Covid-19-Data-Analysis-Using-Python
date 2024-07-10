@@ -43,7 +43,7 @@ runs:
         # Generate changelog
         git cliff \
           --config cliff.toml \
-          --latest \
+          --unreleased \
           --output CHANGELOG.md \
           -vv
         changelog=$(cat CHANGELOG.md)
@@ -59,7 +59,7 @@ runs:
       shell: bash
       run: |
         echo "$CHANGELOG" >> CHANGELOG.md
-        gh release create $VERSION --notes-file CHANGELOG.md
+        gh release create $VERSION -F CHANGELOG.md --title "Release $VERSION"
       env:
         CHANGELOG: ${{ steps.versioning.outputs.changelog }}
         VERSION: ${{ steps.versioning.outputs.version }}
