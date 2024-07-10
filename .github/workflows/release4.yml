@@ -1,51 +1,64 @@
-name: Release Please
-
+name: Version Bump, Changelog and Releases
 on:
   push:
     branches:
       - main
-
 permissions:
   contents: write
-  pull-requests: write
-
 jobs:
-  release-please:
+  version-changelog-and-release:
+    name: Bump version, generate changelog, and create release
     runs-on: ubuntu-latest
     steps:
-      - uses: google-github-actions/release-please-action@v3
-        id: release
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
-          release-type: node
-          package-name: release-please-action
-          
-      - uses: actions/checkout@v4
-        if: ${{ steps.release.outputs.release_created }}
-        
+          fetch-depth: 0
+
+      - name: Determine bump level
+        id: bump-level
+        run: |
+          # Function to determine bump level based on commit messages
+          determine_bump_level() {
+            local commits=$(git log --format=%B -n 50 HEAD^..HEAD)
+            if echo "$commits" | grep -qE '^BREAKING CHANGE:'; then
+              echo "major"
+            elif echo "$commits" | grep -qE '^feat(\([^)]+\))?:'; then
+              echo "minor"
+            elif echo "$commits" | grep -qE '^(fix|docs|style|refactor|perf|test|chore)(\([^)]+\))?:'; then
+              echo "patch"
+            else
+              echo "patch"  # Default to patch if no conventional commit is found
+            fi
+          }
+
+          # Set the bump level
+          BUMP_LEVEL=$(determine_bump_level)
+          echo "Determined bump level: $BUMP_LEVEL"
+          echo "bump_level=$BUMP_LEVEL" >> $GITHUB_OUTPUT
+
+      - name: Bump version
+        uses: haya14busa/action-bumpr@v1
+        id: bumpr
+        with:
+          default_bump_level: ${{ steps.bump-level.outputs.bump_level }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+         
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
         id: git-cliff
-        if: ${{ steps.release.outputs.release_created }}
         with:
           config: cliff.toml
           args: -vv --latest --strip header
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
-          
-      - name: Update Release Body
-        uses: actions/github-script@v6
-        if: ${{ steps.release.outputs.release_created }}
-        env:
-          RELEASE_ID: ${{ steps.release.outputs.release_id }}
-          CHANGELOG: ${{ steps.git-cliff.outputs.content }}
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        if: "steps.bumpr.outputs.skip != 'true'"
         with:
-          github-token: ${{secrets.GITHUB_TOKEN}}
-          script: |
-            const fs = require('fs');
-            await github.rest.repos.updateRelease({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              release_id: process.env.RELEASE_ID,
-              body: process.env.CHANGELOG
-            });
+          body: ${{ steps.git-cliff.outputs.content }}
+          tag_name: ${{ steps.bumpr.outputs.next_version }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
