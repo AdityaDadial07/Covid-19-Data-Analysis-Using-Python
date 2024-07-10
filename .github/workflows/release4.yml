@@ -1,4 +1,4 @@
-name: Release and version management workflow
+name: Release and versioning
 on:
   push:
     branches:
