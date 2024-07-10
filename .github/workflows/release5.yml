@@ -1,3 +1,11 @@
+name: Automated Versioning and Releases
+on:
+  push:
+    branches:
+      - main
+permissions:
+  contents: write
+  
 jobs:
   version:
     name: Version
