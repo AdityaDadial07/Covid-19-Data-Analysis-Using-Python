@@ -20,20 +20,20 @@ jobs:
           # Function to determine bump level based on commit messages
           determine_bump_level() {
             local commits=$(git log --format=%B -n 50 HEAD^..HEAD)
-            if echo "$commits" | grep -qE '^BREAKING CHANGE:'; then
+            if echo "$commits" | grep -qE '^(chore|ci|docs|feat|fix|test)(\([a-z \-]+\))?!: .+$'; then
               echo "major"
-            elif echo "$commits" | grep -qE '^feat(\([^)]+\))?:'; then
+            elif echo "$commits" | grep -qE '^feat(\([^)]+\))?: .+$'; then
               echo "minor"
-            elif echo "$commits" | grep -qE '^(fix|docs|style|refactor|perf|test|chore|ci)(\([^)]+\))?:'; then
+            elif echo "$commits" | grep -qE '^(fix|docs|style|refactor|perf|test|chore|ci)(\([^)]+\))?: .+$'; then
               echo "patch"
             elif echo "$commits" | grep -qE '^Merge pull request'; then
               # For merge commits, analyze the merged commits
               merged_commits=$(git log --format=%B HEAD^2..HEAD^)
-              if echo "$merged_commits" | grep -qE '^BREAKING CHANGE:'; then
+              if echo "$merged_commits" | grep -qE '^(chore|ci|docs|feat|fix|test)(\([a-z \-]+\))?!: .+$'; then
                 echo "major"
-              elif echo "$merged_commits" | grep -qE '^feat(\([^)]+\))?:'; then
+              elif echo "$merged_commits" | grep -qE '^feat(\([^)]+\))?: .+$'; then
                 echo "minor"
-              elif echo "$merged_commits" | grep -qE '^(fix|docs|style|refactor|perf|test|chore|ci)(\([^)]+\))?:'; then
+              elif echo "$merged_commits" | grep -qE '^(fix|docs|style|refactor|perf|test|chore|ci)(\([^)]+\))?: .+$'; then
                 echo "patch"
               else
                 echo "patch"  # Default to patch if no conventional commit is found in merged commits
