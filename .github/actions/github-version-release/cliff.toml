@@ -4,33 +4,33 @@
 [changelog]
 # template for the changelog body
 # https://keats.github.io/tera/docs/#introduction
-body = """
-{%- macro remote_url() -%}
-  https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}
-{%- endmacro -%}
+# body = """
+# {%- macro remote_url() -%}
+#   https://github.com/{{ remote.github.owner }}/{{ remote.github.repo }}
+# {%- endmacro -%}
 
-{% macro print_commit(commit) -%}
-    - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
-        {% if commit.breaking %}[**breaking**] {% endif %}\
-        {{ commit.message | upper_first }} - \
-        ([{{ commit.id | truncate(length=7, end="") }}]({{ self::remote_url() }}/commit/{{ commit.id }}))\
-{% endmacro -%}
+# {% macro print_commit(commit) -%}
+#     - {% if commit.scope %}*({{ commit.scope }})* {% endif %}\
+#         {% if commit.breaking %}[**breaking**] {% endif %}\
+#         {{ commit.message | upper_first }} - \
+#         ([{{ commit.id | truncate(length=7, end="") }}]({{ self::remote_url() }}/commit/{{ commit.id }}))\
+# {% endmacro -%}
 
-{% for group, commits in commits | group_by(attribute="group") %}
-    ### {{ group | striptags | trim | upper_first }}
-    {% for commit in commits
-    | filter(attribute="scope")
-    | sort(attribute="scope") %}
-        {{ self::print_commit(commit=commit) }}
-    {%- endfor -%}
-    {% raw %}\n{% endraw %}\
-    {%- for commit in commits %}
-        {%- if not commit.scope -%}
-            {{ self::print_commit(commit=commit) }}
-        {% endif -%}
-    {% endfor -%}
-{% endfor %}\n
-"""
+# {% for group, commits in commits | group_by(attribute="group") %}
+#     ### {{ group | striptags | trim | upper_first }}
+#     {% for commit in commits
+#     | filter(attribute="scope")
+#     | sort(attribute="scope") %}
+#         {{ self::print_commit(commit=commit) }}
+#     {%- endfor -%}
+#     {% raw %}\n{% endraw %}\
+#     {%- for commit in commits %}
+#         {%- if not commit.scope -%}
+#             {{ self::print_commit(commit=commit) }}
+#         {% endif -%}
+#     {% endfor -%}
+# {% endfor %}\n
+# """
 # remove the leading and trailing whitespace from the template
 trim = true
 # changelog footer
