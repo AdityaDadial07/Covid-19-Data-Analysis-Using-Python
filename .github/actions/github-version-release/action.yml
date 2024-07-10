@@ -38,11 +38,11 @@ runs:
       shell: bash
       run: |
         # Bump Version
-        echo "version=$(git cliff -c .github/actions/github-version-release/cliff.toml --bumped-version)" >> $GITHUB_OUTPUT
+        echo "version=$(git cliff --config cliff.toml --bumped-version)" >> $GITHUB_OUTPUT
         
         # Generate changelog
         git cliff \
-          -c github/actions/github-version-release/cliff.toml \
+          --config cliff.toml \
           --unreleased  \
           --output CHANGELOG.md \
           -vv
