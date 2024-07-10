@@ -97,7 +97,7 @@ jobs:
           echo "$changelog" >> $GITHUB_OUTPUT
           echo "$EOF" >> $GITHUB_OUTPUT
 
-      - name: Push Release to GitHub
+      - name: Push Release to GitHub repo
         shell: bash
         run: |
           echo "$CHANGELOG" >> CHANGELOG.md
