@@ -3,11 +3,38 @@ on:
   push:
     branches:
       - main
+  pull_request:
+    branches:
+      - main
+
 permissions:
   contents: write
+
 jobs:
+  test:
+    name: Run tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.x'
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: Run tests
+        run: python -m unittest discover tests
+
   version-changelog-and-release:
     name: Bump version, generate changelog, and create release
+    needs: test
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -19,10 +46,16 @@ jobs:
         id: bump-level
         run: |
           git log --format=%B -n 1 ${{ github.sha }} | 
-          awk '/^BREAKING CHANGE:/ || /^[a-zA-Z]+(\([a-zA-Z]+\))?!:/ {print "major"; exit} 
-               /^feat:/ {print "minor"; exit} 
-               /^fix:/ {print "patch"; exit} 
-               END {if (NR==0) print "patch"}' > bump_level.txt
+          awk '
+          /^BREAKING CHANGE:/ || /^[a-zA-Z]+(\([a-zA-Z]+\))?!:/ {print "major"; exit}
+          /^feat:/ {print "minor"; exit}
+          /^fix:/ || /^doc:/ || /^perf:/ || /^refactor:/ || /^style:/ || /^test:/ {print "patch"; exit}
+          /^chore\(release\): prepare for/ || /^chore\(deps.*\):/ || /^chore\(pr\):/ || /^chore\(pull\):/ {print "skip"; exit}
+          /^chore:/ || /^ci:/ {print "patch"; exit}
+          /security/ {print "patch"; exit}
+          /^revert:/ {print "patch"; exit}
+          END {if (NR==0) print "patch"}
+          ' > bump_level.txt
           echo "level=$(cat bump_level.txt)" >> $GITHUB_OUTPUT
       
       - name: Bump version
