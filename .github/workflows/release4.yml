@@ -1,4 +1,4 @@
-name: Automated Versioning and Release
+name: Automated Versioning and Releases
 on:
   push:
     branches:
