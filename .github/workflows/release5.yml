@@ -73,7 +73,7 @@ jobs:
         uses: kenji-miyake/setup-git-cliff@v2
         with:
           version: "2.2.2"
-          token: ${{ secrets.DAPP_PAT_TOKEN_GITHUB }}
+          token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Generate changelog & bump version
         id: versioning
@@ -105,4 +105,4 @@ jobs:
         env:
           CHANGELOG: ${{ steps.versioning.outputs.changelog }}
           VERSION: ${{ steps.versioning.outputs.version }}
-          GH_TOKEN: ${{ secrets.DAPP_PAT_TOKEN_GITHUB }}
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
