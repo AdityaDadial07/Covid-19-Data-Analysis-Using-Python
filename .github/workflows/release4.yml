@@ -1,4 +1,4 @@
-name: Release and versioning
+name: Version bumping, changelog generation and Release
 on:
   push:
     branches:
