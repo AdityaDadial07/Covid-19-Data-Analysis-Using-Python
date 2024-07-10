@@ -1,4 +1,4 @@
-name: Version Bump, Changelog and Release workflow
+name: Release and version management workflow
 on:
   push:
     branches:
