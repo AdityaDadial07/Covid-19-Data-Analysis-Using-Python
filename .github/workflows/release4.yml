@@ -33,7 +33,7 @@ jobs:
                 echo "major"
               elif echo "$merged_commits" | grep -qE '^feat(\([^)]+\))?:'; then
                 echo "minor"
-              elif echo "$merged_commits" | grep -qE '^(fix|docs|style|refactor|perf|test|chore)(\([^)]+\))?:'; then
+              elif echo "$merged_commits" | grep -qE '^(fix|docs|style|refactor|perf|test|chore|ci)(\([^)]+\))?:'; then
                 echo "patch"
               else
                 echo "patch"  # Default to patch if no conventional commit is found in merged commits
