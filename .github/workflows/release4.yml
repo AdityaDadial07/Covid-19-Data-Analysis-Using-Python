@@ -1,41 +1,51 @@
-name: Version Bump, Changelog and Release
+name: Release Please
+
 on:
   push:
     branches:
       - main
+
 permissions:
   contents: write
+  pull-requests: write
+
 jobs:
-  version-changelog-and-release:
-    name: Bump version, generate changelog, and create release
+  release-please:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: google-github-actions/release-please-action@v3
+        id: release
         with:
-          fetch-depth: 0
-      - name: Bump version
-        uses: anothrNick/github-tag-action@1.67.0
-        id: bumpr
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          DEFAULT_BUMP: patch
-          WITH_V: true
-      
+          release-type: node
+          package-name: release-please-action
+          
+      - uses: actions/checkout@v4
+        if: ${{ steps.release.outputs.release_created }}
+        
       - name: Generate a changelog
         uses: orhun/git-cliff-action@v3
         id: git-cliff
+        if: ${{ steps.release.outputs.release_created }}
         with:
           config: cliff.toml
           args: -vv --latest --strip header
         env:
           OUTPUT: CHANGES.md
           GITHUB_REPO: ${{ github.repository }}
-      - name: Create Release
-        uses: softprops/action-gh-release@v1
-        if: "steps.bumpr.outputs.new_tag"
-        with:
-          body: ${{ steps.git-cliff.outputs.content }}
-          tag_name: ${{ steps.bumpr.outputs.new_tag }}
+          
+      - name: Update Release Body
+        uses: actions/github-script@v6
+        if: ${{ steps.release.outputs.release_created }}
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          RELEASE_ID: ${{ steps.release.outputs.release_id }}
+          CHANGELOG: ${{ steps.git-cliff.outputs.content }}
+        with:
+          github-token: ${{secrets.GITHUB_TOKEN}}
+          script: |
+            const fs = require('fs');
+            await github.rest.repos.updateRelease({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              release_id: process.env.RELEASE_ID,
+              body: process.env.CHANGELOG
+            });
