@@ -4,7 +4,7 @@ description: "Elanco custom GitHub Action to automatically version bump (semver 
 inputs:
   GH_TOKEN:
     required: true
-    description: "The GitHub API Token permitted to tag and release to a GitHub repository"
+    description: "The GitHub API Token permitted to tag and release to a GitHub Repository"
   GIT_CLIFF_VERSION:
     required: true
     description: "The version of Git Cliff to invoke, e.g. 'v2.2.1'"
